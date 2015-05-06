@@ -1,8 +1,26 @@
+/*
+Apache License 2.0 
+http://www.apache.org/licenses/
+
+Joe Rady for 
+Fleuchaus & Gallo Partnerschaft mbB
+Steiner Strasse 15/A
+81369 München
+Germany
+
+
+
+INvoice LC with split invoice:
+If an invoice is split between several Recipients, this will only pick the percentualised portion of the individual WC
+
+*/
+
+
 DECLARE @LA INT; DECLARE @IN INT; DECLARE @CASE INT; DECLARE @OTHERS INT; DECLARE @intime VARCHAR(8); 
 SET
-	@LA = 4; 
+	@LA = %LA; 
 SET
-	@IN = 28014; 
+	@IN = %IN; 
 SELECT
 	@intime = CONVERT(VARCHAR(8), invocie_date, 108) 
 FROM
