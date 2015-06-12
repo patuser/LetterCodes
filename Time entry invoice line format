@@ -1,0 +1,38 @@
+/*
+NOTE: early development only...
+
+Time workcode invoice line generation.  Uses the VAT2/ACN No field in financial tab of
+name record to determine format.
+'D' gives detailed format each entry has a line: date person time_spent time_comment
+Any other value gives paragraph of time_comment
+
+BUT HELP NEEDED! this works in sql with explicit name_id and invoice_id, but crashes Patricia
+when these are replaced by the %NI and %IN respectively.  Working on this - thoughts welcome.
+
+Once working in Patricia, I will add further IF_THEN to use default time_comment when
+comment field empty.
+
+Chris Vigars, Astrum ElementOne Limited
+*/
+
+IF
+(SELECT pat_names.acn_number from pat_names where pat_names.name_id =%NI) ='D'
+BEGIN
+SELECT convert(varchar,BUDGET_LINE.RECORDED_DATE,4)+ ' ' +
+    Cast(BUDGET_LINE.DEB_HANDLAGG As [Char](3)) + ' ' + 
+    Cast(BUDGET_LINE.B_L_QUANTITY As [Char](5)) + ' Hours:' + '  ' +
+    IsNull(Cast(BUDGET_LINE.B_L_COMMENT As varchar(124)), '')
+FROM BUDGET_LINE, WORK_CODE
+WHERE WORK_CODE.WORK_CODE_TYPE = 'T' AND WORK_CODE.WORK_CODE_ID = BUDGET_LINE.WORK_CODE_ID AND BUDGET_LINE.B_L_INVOICE_NUMBER = %IN
+END
+ELSE
+BEGIN
+SELECT DISTINCT
+STUFF((SELECT 
+  ', ' + IsNull(cast(BUDGET_LINE.B_L_COMMENT as varchar(124)), ''), ''
+FROM BUDGET_LINE, WORK_CODE
+WHERE WORK_CODE.WORK_CODE_TYPE = 'T' AND WORK_CODE.WORK_CODE_ID = BUDGET_LINE.WORK_CODE_ID AND BUDGET_LINE.B_L_INVOICE_NUMBER = %IN
+  For Xml Path('')), 1, 1, '' )
+FROM BUDGET_LINE, work_code
+WHERE WORK_CODE.WORK_CODE_TYPE = 'T' AND WORK_CODE.WORK_CODE_ID = BUDGET_LINE.WORK_CODE_ID AND BUDGET_LINE.B_L_INVOICE_NUMBER = %IN
+END
