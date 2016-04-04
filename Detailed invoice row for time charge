@@ -1,0 +1,22 @@
+/* This LC produces a single invoice line for time charges in the form of:
+
+DATE Person Hours Time_comment
+
+Chris Vigars
+Astrum ElementOne Limited
+*/
+Select
+  Convert(varchar,BUDGET_LINE.RECORDED_DATE,4) + '  ' +
+  Cast(BUDGET_LINE.DEB_HANDLAGG As [Char](3)) + ' ' +
+  Cast(BUDGET_LINE.B_L_QUANTITY As [Char](5)) + ' Hours:' + '  ' +
+  IsNull(Cast(BUDGET_LINE.B_L_COMMENT As varchar(124)), '')
+From
+  BUDGET_LINE Inner Join
+  WORK_CODE On WORK_CODE.WORK_CODE_ID = BUDGET_LINE.WORK_CODE_ID Inner Join
+  WORK_CODE_TEXT On WORK_CODE_TEXT.WORK_CODE_ID = WORK_CODE.WORK_CODE_ID
+Where
+  WORK_CODE.WORK_CODE_TYPE = 'T' And
+  WORK_CODE_TEXT.LANGUAGE_ID = 3 And
+  BUDGET_LINE.B_L_INVOICE_NUMBER = %IN
+
+order by BUDGET_LINE.RECORDED_DATE
